@@ -10,6 +10,11 @@ var g_stop = 0; // Go by default.
 // (0,0,0,255), (255,0,0,255), (0,255,255,255), (0,0,255,255)
 var colorArray = {0: [0,0,255,255], 1: [255,255,0,255], 2: [255,0,0,255], 3: [0,0,0,0]};
 
+// function preload() {
+//     img = loadImage('assets/panda.png');
+//     image(img,x2 * 10,y2 * 10,10,10); //panda :D
+//     img.set(color);
+// }
 function setup() // P5 Setup Fcn
 {
     let sz = g_canvas.cell_size;
@@ -19,7 +24,7 @@ function setup() // P5 Setup Fcn
     draw_grid( 10, 50, 'white', 'yellow' );
 }
 
-var g_bot = { dir:0, x:30, y:20, color:100 }; // Dir is 0..7 clock, w 0 up.
+var g_bot = { dir:0, x:30, y:20, oldx:0, oldy:0, color: [0,0,0,0] }; // Dir is 0..7 clock, w 0 up.
 var g_box = { t:1, hgt:47, l:1, wid:63 }; // Box in which bot can move.
 
 // function to compare arrays
@@ -30,7 +35,7 @@ function arrayEquals(a, b) {
       a.length === b.length &&
       a.every((val, index) => val === b[index]);
 }
-  
+
 
 function move_bot( )
 {
@@ -41,9 +46,10 @@ function move_bot( )
     let y = 1+ g_bot.y*sz;
     let acolors = get( x + sz2, y + sz2 ); // Get cell interior pixel color [RGBA] array.
     let dir = 0;
+    let botDir  = g_bot.dir;
     let colorIndex = 0;
 
-    console.log(acolors);
+    console.log("Color: " + acolors);
 
     if (arrayEquals(colorArray[3], acolors)) // check black
     {
@@ -76,35 +82,78 @@ function move_bot( )
     let dy = 0;
     
     // Convert dir to x,y deltas: dir = clock w 0=Up,2=Rt,4=Dn,6=Left.
-
-    switch(dir)
+    
+    switch(botDir)
     {
-    case 0 : {         dy = -1; break; } //up
-    case 1 : { dx = 1; dy = -1; break; } // right-up
-    case 2 : { dx = 1; break; } //right
-    case 3 : { dx = 1; dy = 1; break; } // right-dn
-    case 4 : {         dy = 1; break; }//dn
-    case 5 : { dx = -1; dy = 1; break; }//left-dn
-    case 6 : { dx = -1; break; } //left
-    case 7 : { dx = -1; dy = -1; break; }//left-up
+        case 0: // if bot is facing up
+            {
+                switch(dir) {
+                    case 0:  { dy = -1; botDir = 0; break; } // straight
+                    case 2 : { dx = 1; botDir = 2; break; } //right
+                    case 6 : { dx = -1; botDir = 6; break; } //left
+                }
+            break;
+            }
+        case 2: // if bot is facing right
+        {
+            switch(dir) {
+                case 0:  { dx = 1; botDir = 2; break; } // straight
+                case 2 : { dy = 1; botDir = 4; break; } // right
+                case 6 : { dy = -1; botDir = 0; break; } //left
+            }
+            break;
+        }
+        case 6: // if bot is facing left
+        {
+            switch(dir) {
+                case 0:  { dx = -1; botDir = 6; break; } // straight
+                case 2 : { dy = -1; botDir = 0; break; } // right
+                case 6 : { dy = 1; botDir = 4; break; } //left
+            }
+            break;
+        }
+        case 4: // if bot is facing down
+        {
+            switch(dir) {
+                case 0:  { dy = 1; botDir = 4; break; } // straight
+                case 2 : { dx = -1; botDir = 6; break; } // right
+                case 6 : { dx = 1; botDir = 2; break; } //left
+            }
+            break;
+        }
+            
     }
     
-    console.log("color index: " + colorIndex);
+    // switch(dir)
+    // {
+    // case 0 : {         dy = -1; break; } //up
+    // case 1 : { dx = 1; dy = -1; break; } // right-up
+    // case 2 : { dx = 1; break; } //right
+    // case 3 : { dx = 1; dy = 1; break; } // right-dn
+    // case 4 : {         dy = 1; break; }//dn
+    // case 5 : { dx = -1; dy = 1; break; }//left-dn
+    // case 6 : { dx = -1; break; } //left
+    // case 7 : { dx = -1; dy = -1; break; }//left-up
+    // }
+    
     let x2 = (dx + g_bot.x + g_box.wid) % g_box.wid; // Move-x.  Ensure positive b4 mod.
     let y2 = (dy + g_bot.y + g_box.hgt) % g_box.hgt; // Ditto y.
-    if (colorIndex == 0)
+
+    // increment the color
+    if (colorIndex == 3)
     {
-        colorIndex = 3;
+        colorIndex = 0;
     }
     else
     {
-        colorIndex = colorIndex - 1;
+        colorIndex = colorIndex + 1;
     }
-    
     let color =  colorArray[colorIndex]; // Incr color in nice range.
+    g_bot.oldx = g_bot.x;
+    g_bot.oldy = g_bot.y;
     g_bot.x = x2; // Update bot x.
     g_bot.y = y2;
-    g_bot.dir = dir;
+    g_bot.dir = botDir;
     g_bot.color = color;
     // console.log( "bot x,y,dir,clr = " + x + "," + y + "," + dir + "," +  color );
 }
@@ -113,8 +162,8 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
 {
     let sz = g_canvas.cell_size;
     let sz2 = sz / 2;
-    let x = 1+ g_bot.x*sz; // Set x one pixel inside the sz-by-sz cell.
-    let y = 1+ g_bot.y*sz;
+    let x = 1+ g_bot.oldx*sz; // Set x one pixel inside the sz-by-sz cell.
+    let y = 1+ g_bot.oldy*sz;
     let big = sz -2; // Stay inside cell walls.
     // Fill 'color': its a keystring, or a hexstring like "#5F", etc.  See P5 docs.
     fill( g_bot.color ); // Concat string, auto-convert the number to string.
@@ -124,8 +173,8 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
     // console.log( "acolors,pix = " + acolors + ", " + pix );
 
     // (*) Here is how to detect what's at the pixel location.  See P5 docs for fancier...
-    if (0 != pix) { /*fill( 0 );*/ stroke( 0 ); } // Turn off color of prior bot-visited cell.
-    else { stroke( 'white' ); } // Else Bot visiting this cell, so color it.
+    // if (0 != pix) { fill( 0 ); stroke( 'white' ); } // Turn off color of prior bot-visited cell.
+    // else { stroke( 'white' ); } // Else Bot visiting this cell, so color it.
 
     // Paint the cell.
     rect( x, y, big, big );
@@ -133,7 +182,7 @@ function draw_bot( ) // Convert bot pox to grid pos & draw bot.
 
 function draw_update()  // Update our display.
 {
-    //console.log( "g_frame_cnt = " + g_frame_cnt );
+    //console.log( "g_frame_cnt = " + g_frame_cnt )
     move_bot( );
     draw_bot( );
 }
