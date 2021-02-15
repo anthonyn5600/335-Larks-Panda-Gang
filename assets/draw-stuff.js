@@ -11,7 +11,7 @@ function draw_grid( rminor, rmajor, rstroke, rfill  )
     fill( rfill );;
     let sz = g_canvas.cell_size;
     let width = g_canvas.wid*sz;
-    let height = g_canvas.hgt*sz
+    let height = g_canvas.hgt*sz;
     for ( var ix = 0; ix < width; ix += rminor )
     {
         let big_linep = (ix % rmajor == 0);
