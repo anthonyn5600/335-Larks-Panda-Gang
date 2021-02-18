@@ -1,5 +1,11 @@
-// Draw stuff, with P5  // CF p5js.org/reference
-// Time-stamp: <2020-02-02 14:46:00 Chuck Siska>
+// Team:       Panda Gang
+// Members:    Stephen Lee, Anthony Ngon, Kris Calma, Nicolas Vasquez
+// Contact:    angon@csu.fullerton.edu, stephenjonglee@csu.fullerton.edu, calmakris@csu.fullerton.edu, nickvas67@csu.fullerton.edu
+// Github:     https://github.com/anthonyn5600/335-Larks-Panda-Gang
+// Project 1:  Cella Larks Ant
+// File Description: Draw stuff, with P5 // CF p5js.org/reference
+//                   Function that draws the grid.
+
 // ------------------------------------------------------------
 
 // =====================================================  draw_grid ====
